@@ -1,0 +1,3 @@
+Create view vw_SKUPrice 
+AS SELECT *, dbo.udf_GetSKUPrice2(ID_SKU) as Price
+From Basket
