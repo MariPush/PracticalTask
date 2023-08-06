@@ -1,0 +1,40 @@
+Create TRIGGER dbo.TR_Basket_insert_update ON dbo.Basket 
+INSTEAD OF INSERT, UPDATE
+as 
+begin
+if  (select Count (inserted.ID_SKU) From inserted)>=2
+begin
+
+Declare   @ID_SKU INT,@ID_FAMILY Int,@Quantity float, @Value float,@Date Date, @DVnew Float
+DECLARE my_cur CURSOR FOR 
+SELECT ID_SKU, ID_Family, Quantity, Value, PurchaseDate, DiscountValue
+FROM inserted
+  
+OPEN my_cur
+FETCH NEXT FROM my_cur INTO  @ID_SKU ,@ID_FAMILY ,@Quantity , @Value ,@Date , @DVnew
+ WHILE @@FETCH_STATUS = 0
+Begin
+set @DVnew = @Value*0.05
+       INSERT INTO dbo.Basket (ID_SKU, ID_Family, Quantity, Value, PurchaseDate, DiscountValue)
+	   Select  @ID_SKU ,@ID_FAMILY ,@Quantity , @Value ,@Date , @DVnew 
+	   
+	   FETCH NEXT FROM my_cur INTO @ID_SKU ,@ID_FAMILY ,@Quantity , @Value ,@Date , @DVnew
+ END
+   
+
+   CLOSE my_cur
+   DEALLOCATE my_cur
+ 
+ end
+  else 
+  begin
+  SET @ID_SKU = (SELECT ID_SKU  FROM inserted)
+  Set @ID_FAMILY = (SELECT ID_Family FROM inserted)
+  Set @Quantity = (SELECT Quantity FROM inserted)
+  Set @Value = (SELECT Value FROM inserted)
+  Set @Date = (SELECT PurchaseDate FROM inserted)
+  set @DVnew = 0
+INSERT INTO dbo.Basket (ID_SKU, ID_Family, Quantity, Value, PurchaseDate, DiscountValue)
+	   Select  @ID_SKU ,@ID_FAMILY ,@Quantity , @Value ,@Date , @DVnew 
+  End
+ END
