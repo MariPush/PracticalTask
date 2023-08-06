@@ -1,0 +1,18 @@
+GO
+CREATE PROCEDURE dbo.usp_MakeFamilyPurchase  (@FamilySurName varchar(255))
+ AS begin  
+ if (select Count(SurName) from  dbo.Family where dbo.Family.SurName = @FamilySurName)=0
+ begin
+  PRINT 'Ошибка: Такой строки нет'
+  end
+  else 
+ 
+  Declare @Value float
+  Declare @ID_Family int
+  Set @ID_Family = (select ID from  dbo.Family where dbo.Family.SurName = @FamilySurName)
+ SET @Value = (select SUM(Value) from dbo.Basket join dbo.Family on dbo.Basket.ID_Family = dbo.Family.ID where dbo.Family.SurName = @FamilySurName)
+ 
+ Update dbo.Family
+ set BudgetValue = @Value
+ where ID = @ID_Family
+ End 
